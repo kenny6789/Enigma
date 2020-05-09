@@ -146,7 +146,7 @@ class Enigma {
     }
 
     //Used to re-arrange array
-    private fun rearrangeArray(myArr: ArrayList<String>, noOfRearrange: Int) {
+    fun rearrangeArray(myArr: ArrayList<String>, noOfRearrange: Int) {
         repeat(noOfRearrange) {
             var temp = myArr[0]
             myArr.removeAt(0)

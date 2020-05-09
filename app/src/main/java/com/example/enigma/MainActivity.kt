@@ -5,9 +5,11 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.view.Gravity
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -20,7 +22,8 @@ class MainActivity : AppCompatActivity() {
     private var enigma: Enigma? = null
     private val function = Functions()
     private var switch = false
-
+    private var checkDisableMode = false
+    private val mySandwichMessage = "Copied!"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         super.onResume()
@@ -31,47 +34,24 @@ class MainActivity : AppCompatActivity() {
         groupRotorTextView()
         groupRotorButton()
         setup()
-        run()
+        takeUserInput()
     }
     private fun setup() {
         //setup buttons
         btnApply.setOnClickListener { applyButton() }
         btnReset.setOnClickListener { resetButton() }
         txvEncryptedAs.setOnClickListener {
-            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText("my encrypted text", txvEncryptedAs.text)
-            clipboard.setPrimaryClip(clip)
+            if(txvEncryptedAs.length() > 0) {
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("my encrypted text", txvEncryptedAs.text)
+                clipboard.setPrimaryClip(clip)
+                val mySandwich = Toast.makeText(this, mySandwichMessage, Toast.LENGTH_SHORT)
+                mySandwich.setGravity(Gravity.CENTER,0,0)
+                mySandwich.show()
+            }
         }
         swtPlugboard.setOnClickListener { if (swtPlugboard.isChecked) switch = function.setupPlugboard(true) }
         rotorSetup()
-    }
-    private fun run() {
-            btnLetterA.setOnClickListener { encrypting(btnLetterA, switch) }
-            btnLetterB.setOnClickListener { encrypting(btnLetterB, switch) }
-            btnLetterC.setOnClickListener { encrypting(btnLetterC, switch) }
-            btnLetterD.setOnClickListener { encrypting(btnLetterD, switch) }
-            btnLetterE.setOnClickListener { encrypting(btnLetterE, switch) }
-            btnLetterF.setOnClickListener { encrypting(btnLetterF, switch) }
-            btnLetterG.setOnClickListener { encrypting(btnLetterG, switch) }
-            btnLetterH.setOnClickListener { encrypting(btnLetterH, switch) }
-            btnLetterI.setOnClickListener { encrypting(btnLetterI, switch) }
-            btnLetterJ.setOnClickListener { encrypting(btnLetterJ, switch) }
-            btnLetterK.setOnClickListener { encrypting(btnLetterK, switch) }
-            btnLetterL.setOnClickListener { encrypting(btnLetterL, switch) }
-            btnLetterM.setOnClickListener { encrypting(btnLetterM, switch) }
-            btnLetterN.setOnClickListener { encrypting(btnLetterN, switch) }
-            btnLetterO.setOnClickListener { encrypting(btnLetterO, switch) }
-            btnLetterP.setOnClickListener { encrypting(btnLetterP, switch) }
-            btnLetterQ.setOnClickListener { encrypting(btnLetterQ, switch) }
-            btnLetterR.setOnClickListener { encrypting(btnLetterR, switch) }
-            btnLetterS.setOnClickListener { encrypting(btnLetterS, switch) }
-            btnLetterT.setOnClickListener { encrypting(btnLetterT, switch) }
-            btnLetterU.setOnClickListener { encrypting(btnLetterU, switch) }
-            btnLetterV.setOnClickListener { encrypting(btnLetterV, switch) }
-            btnLetterW.setOnClickListener { encrypting(btnLetterW, switch) }
-            btnLetterX.setOnClickListener { encrypting(btnLetterX, switch) }
-            btnLetterY.setOnClickListener { encrypting(btnLetterY, switch) }
-            btnLetterZ.setOnClickListener { encrypting(btnLetterZ, switch) }
     }
     //take the input (e.g "a-z") then start encrypting
     private fun encrypting(btn: Button, switch: Boolean) {
@@ -87,6 +67,65 @@ class MainActivity : AppCompatActivity() {
             temp?.let { turnOnLight(it) } // light up the encrypted letter
         } catch (e: NullPointerException) {
             function.displayNullPointerError(this)
+        }
+    }
+    private fun applyButton(){
+        enigma = Enigma()
+        function.enableInputAlphabets(arrInputLetter, true)
+        function.setupRunProgram(enigma!!,txtViewRotor,txtViewRotor2,txtViewRotor3,txtViewRotor1,txtViewRotor4,txtViewRotor5)
+        enableRotorButtons(false)
+        btnApply.isEnabled = false
+        btnReset.isEnabled = true
+        swtPlugboard.isClickable = false
+        changeEncryptedTextViewColour(true) // light on/off the encrypted alphabet
+        checkDisableMode = true
+        changeBackground("Apply")
+    }
+    private fun resetButton(){
+        turnOffLight(arrEncryptedText)
+        txvEncryptedAs.text = ""
+        txvYourMessage.text = ""
+        function.enableInputAlphabets(arrInputLetter, false)
+        swtPlugboard.isChecked = false
+        checkDisableMode = false
+        function.setupPlugboard(false)
+        enableRotorButtons(true)
+        btnApply.isEnabled = true
+        swtPlugboard.isClickable = true
+        switch = false
+        btnReset.isEnabled = false
+        changeEncryptedTextViewColour(false)
+        changeBackground("Reset")
+    }
+    private fun rotorSetup(){
+        //setup rotors
+        btnRotor1Back.setOnClickListener { function.rotorDecrease(txtViewRotor) }
+        btnRotor1Next.setOnClickListener { function.rotorIncrease(txtViewRotor) }
+        btnRotor2Back.setOnClickListener { function.rotorDecrease(txtViewRotor2) }
+        btnRotor2Next.setOnClickListener { function.rotorIncrease(txtViewRotor2) }
+        btnRotor3Back.setOnClickListener { function.rotorDecrease(txtViewRotor3) }
+        btnRotor3Next.setOnClickListener { function.rotorIncrease(txtViewRotor3) }
+
+        //setup rotor's positions
+        btnRotorPosition1Back.setOnClickListener { function.alphabetDecrease(txtViewRotor1) }
+        btnRotorPosition1Next.setOnClickListener { function.alphabetIncrease(txtViewRotor1) }
+        btnRotorPosition2Back.setOnClickListener { function.alphabetDecrease(txtViewRotor4) }
+        btnRotorPosition2Next.setOnClickListener { function.alphabetIncrease(txtViewRotor4) }
+        btnRotorPosition3Back.setOnClickListener { function.alphabetDecrease(txtViewRotor5) }
+        btnRotorPosition3Next.setOnClickListener { function.alphabetIncrease(txtViewRotor5) }
+    }
+    //this method used to light on/off encrypted alphabet
+    private fun changeEncryptedTextViewColour(status: Boolean){
+        if(status) {
+            for (i in arrEncryptedText) {
+                i.setTextColor(Color.parseColor("#EDE9E9"))
+            }
+        }
+        else
+        {
+            for (i in arrEncryptedText) {
+                i.setTextColor(Color.parseColor("#1E1716"))
+            }
         }
     }
     private fun groupEncryptedText() {
@@ -167,6 +206,27 @@ class MainActivity : AppCompatActivity() {
         arrInputLetter.add(btnLetterY)
         arrInputLetter.add(btnLetterZ)
     }
+    //enable and disable the rotors setup
+    //when user click on Apply button then the user cannot change the rotor setup unless they click on Reset button
+    private fun enableRotorButtons(status: Boolean){
+        btnRotor1Back.isEnabled = status
+        btnRotor1Next.isEnabled = status
+        btnRotor2Back.isEnabled = status
+        btnRotor2Next.isEnabled = status
+        btnRotor3Back.isEnabled = status
+        btnRotor3Next.isEnabled = status
+
+        btnRotorPosition1Back.isEnabled = status
+        btnRotorPosition1Next.isEnabled = status
+        btnRotorPosition2Back.isEnabled = status
+        btnRotorPosition2Next.isEnabled = status
+        btnRotorPosition3Back.isEnabled = status
+        btnRotorPosition3Next.isEnabled = status
+        for(i in arrRotorTextViewSetup){
+            if(!status)i.setBackgroundResource(R.drawable.enable_button)
+            else i.setBackgroundResource(R.drawable.disable_button)
+        }
+    }
     //this method used to light off the buttons
     private fun turnOffLight(arr: ArrayList<TextView>) {
         for (key in arr)
@@ -203,108 +263,71 @@ class MainActivity : AppCompatActivity() {
             "Z" -> txvEW_Z.setBackgroundResource(R.drawable.encrypted_text)
         }
     }
-    //enable and disable the rotors setup
-    //when user click on Apply button then the user cannot change the rotor setup unless they click on Reset button
-    private fun enableRotorButtons(status: Boolean){
-        btnRotor1Back.isEnabled = status
-        btnRotor1Next.isEnabled = status
-        btnRotor2Back.isEnabled = status
-        btnRotor2Next.isEnabled = status
-        btnRotor3Back.isEnabled = status
-        btnRotor3Next.isEnabled = status
-
-        btnRotorPosition1Back.isEnabled = status
-        btnRotorPosition1Next.isEnabled = status
-        btnRotorPosition2Back.isEnabled = status
-        btnRotorPosition2Next.isEnabled = status
-        btnRotorPosition3Back.isEnabled = status
-        btnRotorPosition3Next.isEnabled = status
-        for(i in arrRotorTextViewSetup){
-            if(!status)i.setBackgroundResource(R.drawable.enable_button)
-            else i.setBackgroundResource(R.drawable.disable_button)
+    private fun takeUserInput() {
+        btnLetterA.setOnClickListener { encryptThisAlphabet(btnLetterA) }
+        btnLetterB.setOnClickListener { encryptThisAlphabet(btnLetterB) }
+        btnLetterC.setOnClickListener { encryptThisAlphabet(btnLetterC) }
+        btnLetterD.setOnClickListener { encryptThisAlphabet(btnLetterD) }
+        btnLetterE.setOnClickListener { encryptThisAlphabet(btnLetterE) }
+        btnLetterF.setOnClickListener { encryptThisAlphabet(btnLetterF) }
+        btnLetterG.setOnClickListener { encryptThisAlphabet(btnLetterG) }
+        btnLetterH.setOnClickListener { encryptThisAlphabet(btnLetterH) }
+        btnLetterI.setOnClickListener { encryptThisAlphabet(btnLetterI) }
+        btnLetterJ.setOnClickListener { encryptThisAlphabet(btnLetterJ) }
+        btnLetterK.setOnClickListener { encryptThisAlphabet(btnLetterK) }
+        btnLetterL.setOnClickListener { encryptThisAlphabet(btnLetterL) }
+        btnLetterM.setOnClickListener { encryptThisAlphabet(btnLetterM) }
+        btnLetterN.setOnClickListener { encryptThisAlphabet(btnLetterN) }
+        btnLetterO.setOnClickListener { encryptThisAlphabet(btnLetterO) }
+        btnLetterP.setOnClickListener { encryptThisAlphabet(btnLetterP) }
+        btnLetterQ.setOnClickListener { encryptThisAlphabet(btnLetterQ) }
+        btnLetterR.setOnClickListener { encryptThisAlphabet(btnLetterR) }
+        btnLetterS.setOnClickListener { encryptThisAlphabet(btnLetterS) }
+        btnLetterT.setOnClickListener { encryptThisAlphabet(btnLetterT) }
+        btnLetterU.setOnClickListener { encryptThisAlphabet(btnLetterU) }
+        btnLetterV.setOnClickListener { encryptThisAlphabet(btnLetterV) }
+        btnLetterW.setOnClickListener { encryptThisAlphabet(btnLetterW) }
+        btnLetterX.setOnClickListener { encryptThisAlphabet(btnLetterX) }
+        btnLetterY.setOnClickListener { encryptThisAlphabet(btnLetterY) }
+        btnLetterZ.setOnClickListener { encryptThisAlphabet(btnLetterZ) }
+    }
+    private fun changeBackground(status: String){
+        if(status == "Apply") {
+            btnReset.setBackgroundResource(R.drawable.enable_button)
+            btnApply.setBackgroundResource(R.drawable.disable_button)
+            btnRotor1Back.setBackgroundResource(R.drawable.enable_left)
+            btnRotor2Back.setBackgroundResource(R.drawable.enable_left)
+            btnRotor3Back.setBackgroundResource(R.drawable.enable_left)
+            btnRotor1Next.setBackgroundResource(R.drawable.enable_right)
+            btnRotor2Next.setBackgroundResource(R.drawable.enable_right)
+            btnRotor3Next.setBackgroundResource(R.drawable.enable_right)
+            btnRotorPosition1Back.setBackgroundResource(R.drawable.enable_left)
+            btnRotorPosition2Back.setBackgroundResource(R.drawable.enable_left)
+            btnRotorPosition3Back.setBackgroundResource(R.drawable.enable_left)
+            btnRotorPosition1Next.setBackgroundResource(R.drawable.enable_right)
+            btnRotorPosition2Next.setBackgroundResource(R.drawable.enable_right)
+            btnRotorPosition3Next.setBackgroundResource(R.drawable.enable_right)
+        }
+        else{
+            btnReset.setBackgroundResource(R.drawable.disable_button)
+            btnApply.setBackgroundResource(R.drawable.enable_button)
+            btnRotor1Back.setBackgroundResource(R.drawable.button_left)
+            btnRotor2Back.setBackgroundResource(R.drawable.button_left)
+            btnRotor3Back.setBackgroundResource(R.drawable.button_left)
+            btnRotor1Next.setBackgroundResource(R.drawable.button_right)
+            btnRotor2Next.setBackgroundResource(R.drawable.button_right)
+            btnRotor3Next.setBackgroundResource(R.drawable.button_right)
+            btnRotorPosition1Back.setBackgroundResource(R.drawable.button_left)
+            btnRotorPosition2Back.setBackgroundResource(R.drawable.button_left)
+            btnRotorPosition3Back.setBackgroundResource(R.drawable.button_left)
+            btnRotorPosition1Next.setBackgroundResource(R.drawable.button_right)
+            btnRotorPosition2Next.setBackgroundResource(R.drawable.button_right)
+            btnRotorPosition3Next.setBackgroundResource(R.drawable.button_right)
         }
     }
-    private fun applyButton(){
-        enigma = Enigma()
-        function.enableInputAlphabets(arrInputLetter, true)
-        enableRotorButtons(false)
-        btnApply.isEnabled = false
-        btnReset.isEnabled = true
-        swtPlugboard.isClickable = false
-        changeEncryptedTextViewColour(true) // light on/off the encrypted alphabet
-        btnReset.setBackgroundResource(R.drawable.enable_button)
-        btnApply.setBackgroundResource(R.drawable.disable_button)
-        btnRotor1Back.setBackgroundResource(R.drawable.enable_left)
-        btnRotor2Back.setBackgroundResource(R.drawable.enable_left)
-        btnRotor3Back.setBackgroundResource(R.drawable.enable_left)
-        btnRotor1Next.setBackgroundResource(R.drawable.enable_right)
-        btnRotor2Next.setBackgroundResource(R.drawable.enable_right)
-        btnRotor3Next.setBackgroundResource(R.drawable.enable_right)
-        btnRotorPosition1Back.setBackgroundResource(R.drawable.enable_left)
-        btnRotorPosition2Back.setBackgroundResource(R.drawable.enable_left)
-        btnRotorPosition3Back.setBackgroundResource(R.drawable.enable_left)
-        btnRotorPosition1Next.setBackgroundResource(R.drawable.enable_right)
-        btnRotorPosition2Next.setBackgroundResource(R.drawable.enable_right)
-        btnRotorPosition3Next.setBackgroundResource(R.drawable.enable_right)
-    }
-    private fun resetButton(){
-        turnOffLight(arrEncryptedText)
-        txvEncryptedAs.text = ""
-        txvYourMessage.text = ""
-        function.enableInputAlphabets(arrInputLetter, false)
-        swtPlugboard.isChecked = false
-        function.setupPlugboard(false)
-        enableRotorButtons(true)
-        btnApply.isEnabled = true
-        swtPlugboard.isClickable = true
-        switch = false
-        btnReset.isEnabled = false
-        changeEncryptedTextViewColour(false)
-        btnReset.setBackgroundResource(R.drawable.disable_button)
-        btnApply.setBackgroundResource(R.drawable.enable_button)
-        btnRotor1Back.setBackgroundResource(R.drawable.button_left)
-        btnRotor2Back.setBackgroundResource(R.drawable.button_left)
-        btnRotor3Back.setBackgroundResource(R.drawable.button_left)
-        btnRotor1Next.setBackgroundResource(R.drawable.button_right)
-        btnRotor2Next.setBackgroundResource(R.drawable.button_right)
-        btnRotor3Next.setBackgroundResource(R.drawable.button_right)
-        btnRotorPosition1Back.setBackgroundResource(R.drawable.button_left)
-        btnRotorPosition2Back.setBackgroundResource(R.drawable.button_left)
-        btnRotorPosition3Back.setBackgroundResource(R.drawable.button_left)
-        btnRotorPosition1Next.setBackgroundResource(R.drawable.button_right)
-        btnRotorPosition2Next.setBackgroundResource(R.drawable.button_right)
-        btnRotorPosition3Next.setBackgroundResource(R.drawable.button_right)
-    }
-    private fun rotorSetup(){
-        //setup rotors
-        btnRotor1Back.setOnClickListener { function.rotorDecrease(txtViewRotor) }
-        btnRotor1Next.setOnClickListener { function.rotorIncrease(txtViewRotor) }
-        btnRotor2Back.setOnClickListener { function.rotorDecrease(txtViewRotor2) }
-        btnRotor2Next.setOnClickListener { function.rotorIncrease(txtViewRotor2) }
-        btnRotor3Back.setOnClickListener { function.rotorDecrease(txtViewRotor3) }
-        btnRotor3Next.setOnClickListener { function.rotorIncrease(txtViewRotor3) }
-
-        //setup rotor's positions
-        btnRotorPosition1Back.setOnClickListener { function.alphabetDecrease(txtViewRotor1) }
-        btnRotorPosition1Next.setOnClickListener { function.alphabetIncrease(txtViewRotor1) }
-        btnRotorPosition2Back.setOnClickListener { function.alphabetDecrease(txtViewRotor4) }
-        btnRotorPosition2Next.setOnClickListener { function.alphabetIncrease(txtViewRotor4) }
-        btnRotorPosition3Back.setOnClickListener { function.alphabetDecrease(txtViewRotor5) }
-        btnRotorPosition3Next.setOnClickListener { function.alphabetIncrease(txtViewRotor5) }
-    }
-    //this method used to light on/off encrypted alphabet
-    private fun changeEncryptedTextViewColour(status: Boolean){
-        if(status) {
-            for (i in arrEncryptedText) {
-                i.setTextColor(Color.parseColor("#EDE9E9"))
-            }
-        }
-        else
-        {
-            for (i in arrEncryptedText) {
-                i.setTextColor(Color.parseColor("#1E1716"))
-            }
-        }
+    private fun encryptThisAlphabet(btn: Button){
+        if(checkDisableMode) encrypting(btn, switch)
+        else function.displayNullPointerError(this)
     }
 }
 

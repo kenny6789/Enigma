@@ -443,7 +443,9 @@
         android:layout_marginTop="6dp"
         android:duplicateParentState="false"
         android:editable="false"
+        android:hint="   tap here to copy"
         android:textColor="#EDE9E9"
+        android:textColorHint="#4E4C4C"
         app:layout_constraintStart_toEndOf="@+id/textView9"
         app:layout_constraintTop_toBottomOf="@+id/divider2" />
 
